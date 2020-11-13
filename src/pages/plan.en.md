@@ -1,5 +1,6 @@
 ---
-date: "2019-05-13"
+jumpTo: [{ label: 'Book Trip', link: 'book' }, { label: 'During Travel', link: 'travel' }, { label: 'Expense Claims', link: 'expense' }]
+date:  "2019-05-13"
 title: "Plan Travel"
 lead: "Most government travel begins by getting an approval.  This section will provide guidance on putting together a trip estimate for approval and key information to help plan your trip."
 ---
@@ -17,7 +18,7 @@ Our **Trip Estimator** will help you create an estimate and send it to your supe
 
 **Note:** Allow 3-4 weeks for your Supervisor to approve your estimate.  For urgent travel, contact your Supervisor directly and inform themt when you're submitting your estimate for approval.</div>
         <div class="col-sm-4">
-            <p class="text-center"><a href="https://gc-travel-estimator.herokuapp.com/"  class="btn btn-primary my-4 px-4" target="_blank">Trip Estimator</a></p>
+            <p class="text-center"><a href="/en/estimator" class="btn btn-primary my-4 px-4">Trip Estimator</a></p>
         </div>
     </div>
 </div>
@@ -77,7 +78,7 @@ Yes.  Our [*Trip Estimator*](https://gc-travel-estimator.herokuapp.com/) will he
 </div>
 
 <p class="text-center">
-    <a href="/en/book" class="btn btn-outline-primary my-4 px-4">Continue to Book</a>
+    <a href="/en/book" class="btn btn-primary my-4 px-4">View Book Trip</a>
 </p>
 
 </article>

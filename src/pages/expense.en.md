@@ -1,6 +1,7 @@
 ---
-date: "2019-05-13"
-title: "Submit Expenses"
+jumpTo: [{ label: 'Plan Travel', link: 'plan' }, { label: 'Book Trip', link: 'book' }, { label: 'During Travel', link: 'travel' }]
+date:  "2019-05-13"
+title: "Expense Claims"
 lead: "Once your travel is complete you will need to complete a few steps to correctly submit an expense report and get reimbursed."
 ---
 
@@ -205,3 +206,9 @@ Yes.  For example if you used your own car you would still need to submit the ki
         </div>
     </div>
 </div>
+
+<p class="text-center">
+    <a href="/en/travel" class="btn btn-outline-primary my-4 px-4">Back to During Travel</a>
+</p>
+
+</article>

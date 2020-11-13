@@ -259,7 +259,7 @@ module.exports = {
         'travelLead': "Tout ce dont vous avez besoin lorsque vous voyagez",
         'expense': 'Frais',
         'expenseLead': 'Déposer les frais de voyage et se faire rembourser',
-        'launch': 'Commencer',
+        'view': 'Commencer',
         'indexTitle': 'Commencer',
         'indexLead': "Sélectionnez la partie du voyage avec laquelle vous avez besoin d'aide ou lancez notre assistant de voyage pour une expérience de voyage guidée. Vous pouvez utiliser ce guide hors ligne, même lorsque vous n'êtes pas connecté à Internet.",
         'rates': 'Tarifs et limites de la ville',
@@ -295,5 +295,6 @@ module.exports = {
         "estimateDestinationCityNotValid": "La ville de destination n'est pas valide",
         "estimateDepartureDateNotValid": "La date de départ doit être au format JJ-MM-AAAA",
         "estimateReturnDateNotValid": "La date de retour doit être au format JJ-MM-AAAA",
+        "otherTooltipText": "Provide a total for all other expenses that apply, for example: extra luggage, child care, etc.)"
     }
 };

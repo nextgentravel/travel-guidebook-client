@@ -141,7 +141,13 @@ const Estimator = () => {
 
     useEffect(() => {
         let calculateKilometrics = privateKilometricsValue * (privateVehicleRate / 100);
-        setTransportationCost(calculateKilometrics)
+        setTransportationCost(calculateKilometrics.toFixed(2))
+        setTransportationEstimates({
+            ...transporationEstimates,
+            rentalCar: {
+                estimatedValue: calculateKilometrics,
+            }
+        })
     }, [privateKilometricsValue])
 
     useEffect(() => {
@@ -244,14 +250,6 @@ const Estimator = () => {
     const [haveFlightCost, setHaveFlightCost] = useState(false)
 
     const fetchFlightCost = async () => {
-        setTransportationMessage({ element:
-            <>
-                <Spinner animation="border" role="status" size="sm">
-                    <span className="sr-only">Loading...</span>
-                </Spinner>{' '}
-                <FormattedMessage id="transportationFlightMessageLoading" />
-            </>
-        })
         const departureDateISODate = departureDate.toISODate()
         const returnDateISODate = returnDate.toISODate()
 
@@ -312,6 +310,7 @@ const Estimator = () => {
             setTransportationMessage({ element: <FormattedMessage id="transportationRentalCarMessage" />  })
         } else if (transportationType === 'private') {
             setPrivateKilometricsValue((returnDistance / 1000).toFixed(2));
+            updateTransportationCost(transporationEstimates.rentalCar.estimatedValue)
             setTransportationMessage({ element: <FormattedMessage id="transportationPrivateVehicleMessage" values={{ rate: privateVehicleRate, kilometres: (returnDistance / 1000).toFixed(0) }} />  })
         }
     }, [transportationType])
@@ -418,7 +417,7 @@ const Estimator = () => {
 
                 updateMealCost(mealsAndIncidentals.total)
                 fetchHotelCost()
-                fetchLocalTransportationRate(numberOfDays)
+                fetchLocalTransportationRate(numberOfDays - 1)
 
                 // get ACRD rate for destination
 
@@ -435,12 +434,12 @@ const Estimator = () => {
     }
 
     const clearForm = async () => {
-        await setOrigin('')
-        await setDestination('')
+        setOrigin('')
+        setDestination('')
         document.querySelector('#origin').value = ""
         document.querySelector('#destination').value = ""
-        setDepartureDate('')
-        setReturnDate('');
+        // setDepartureDate('')
+        // setReturnDate('');
         // document.querySelector('#departureDate').value = ""
         // document.querySelector('#returnDate').value = ""
     }

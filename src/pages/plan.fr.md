@@ -1,5 +1,6 @@
 ---
-date: "2019-05-13"
+jumpTo: [{ label: 'Book Trip', link: 'book' }, { label: 'During Travel', link: 'travel' }, { label: 'Expense Claims', link: 'expense' }]
+date:  "2019-05-13"
 title: "Plan"
 lead: "Après avoir décidé de voyager, vous devez commencer par créer un devis. L'estimation devrait donner une approximation globale du coût total du voyage, afin qu'il puisse être approuvé."
 ---

@@ -1,5 +1,6 @@
 ---
-date: "2019-05-13"
+jumpTo: [{ label: 'Plan Travel', link: 'plan' }, { label: 'Book Trip', link: 'book' }, { label: 'Expense Claims', link: 'expense' }]
+date:  "2019-05-13"
 title: "Voyage"
 lead: "Comment gérer tout problème avec le voyage réel"
 ---

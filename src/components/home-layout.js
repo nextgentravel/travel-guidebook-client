@@ -1,12 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import Layout from "../components/layout"
 import SEO from "../components/seo";
 import ContentPanel from "../components/content-panel";
-import DoormatPanel from "../components/doormat-panel";
 import ToolPanel from "../components/tool-panel";
+import DoormatPanel from "../components/doormat-panel";
 import { FormattedMessage } from 'react-intl';
+import { RiQuestionnaireLine } from 'react-icons/ri';
+import { FaMinus } from 'react-icons/fa';
 
 const HomeLayout = () => {
+    const [showContactCard, setShowContactCard] = useState(false);
+    const handleShowContactCardToggle = () => {
+      setShowContactCard(!showContactCard);
+    }
     return (
         <Layout>
         <SEO title="Home" />
@@ -14,8 +20,13 @@ const HomeLayout = () => {
           <div>
             <main id="main-content" role="main">
               <div className="container mt-4">
-                <h2 className="text-center mb-4 font-weight-bold"><FormattedMessage id="indexTitle" /></h2>
-                <p className="text-center mb-5"><FormattedMessage id="indexLead"/></p>
+                <h2 className="mb-4 font-weight-bold"><FormattedMessage id="indexTitle" /></h2>
+                <FormattedMessage
+                  id="indexLead"
+                  values={{
+                    strong: chunks => <strong>{chunks}</strong>,
+                  }}
+                />
                 <div className="row mb-3 mt-3">
                   <ContentPanel />
                 </div>
@@ -32,6 +43,34 @@ const HomeLayout = () => {
               </div>
             </main>
           </div>
+
+          {showContactCard && <div className="card floating-contact-box">
+            <div className="card-header bg-success text-light">
+              <RiQuestionnaireLine size={20} /> Travel Support
+              <FaMinus onClick={handleShowContactCardToggle} size={20} className="float-right text-dark cursor-pointer" />
+            </div>
+            <div className="card-body">
+              <p>For travel support or questions related to your trip, contact HRG 24/7 at:</p>
+              <p><strong>Telephone</strong><br />
+              1-866-857-3578 (Canada & U.S.)<br />
+              +1 613-822-3873 (Other countries)</p>
+
+              <p><strong>TTY</strong><br />
+              1-855-462-8870 (Canada & U.S.)
+              1-704-417-5877 (collect call from other countries)
+              </p>
+
+              <p><strong>Email</strong><br />
+              <a href="mailto:travel.gc@hrgworldwide.com">travel.gc@hrgworldwide.com</a></p>
+            </div>
+          </div>}
+          {!showContactCard && <button
+            type="button"
+            className="btn btn-success rounded-circle floating-contact position-absolute"
+            onClick={handleShowContactCardToggle}
+          >
+            <RiQuestionnaireLine size={35} />
+          </button>}
         </w-screen>
       </Layout>
     )

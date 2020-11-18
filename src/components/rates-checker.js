@@ -1,11 +1,12 @@
 import React, {useState, useEffect} from "react"
 import InputDatalist from "./input-datalist.js"
 import DatePicker from "./date-picker.js"
-import mealAllowances from "../data/meals"
-import { DateTime } from "luxon"
+import calculateMeals from "./calculate-meals.js"
 import * as yup from "yup"
 import monthsContained from "./months-contained.js"
 import { FormattedMessage } from 'react-intl';
+
+import { DateTime } from "luxon"
 
 import cities from "../data/cities.js"
 import acrdRates from "../data/acrdRates.js"
@@ -35,6 +36,10 @@ const RatesChecker = () => {
     const [returnDate, setReturnDate] = useState('');
     const [result, setResult] = useState({});
 
+    let initialDates = {
+        departure: DateTime.local(),
+        return: DateTime.local().plus({ days: 1 }),
+    }
 
     const [validationWarnings, setValidationWarnings] = useState([]);
 
@@ -44,37 +49,6 @@ const RatesChecker = () => {
 
     //   Will use later when integration language
     //   const url = globalHistory.location.pathname;
-
-    const calculateMeals = (departDate, returnDate, province) => {
-        let departD = DateTime.fromISO(departDate);
-        let returnD = DateTime.fromISO(returnDate);
-        let duration = returnD.diff(departD, 'days')
-        let provinceAllowances = Object.keys(mealAllowances);
-
-        let ratesForProvince = {};
-
-        if (provinceAllowances.includes(province)) {
-            ratesForProvince = mealAllowances[province];
-        } else {
-            ratesForProvince = mealAllowances['CAN'];
-        };
-
-        let breakfast = ratesForProvince.breakfast;
-        let lunch = ratesForProvince.lunch;
-        let dinner = ratesForProvince.dinner;
-        let incidentals = ratesForProvince.incidentals;
-        let dailyTotal = breakfast + lunch + dinner + incidentals;
-        let total = dailyTotal * duration.values.days;
-
-        return {
-            dailyTotal,
-            total,
-            breakfast,
-            lunch,
-            dinner,
-            incidentals,
-        }
-    }
 
     const handleSubmit = (e) => {
         setLoading(true);
@@ -186,6 +160,7 @@ const RatesChecker = () => {
                     label={<FormattedMessage id="rateDepart" />}
                     name="departureDate"
                     updateValue={setDepartureDate}
+                    initialDate={initialDates.return}
                 />
                 <DatePicker
                     validationWarnings={validationWarnings}
@@ -193,6 +168,7 @@ const RatesChecker = () => {
                     label={<FormattedMessage id="rateReturn" />}
                     name="returnDate"
                     updateValue={setReturnDate}
+                    initialDate={initialDates.return}
                 />
                 <button type="submit" className="btn btn-primary"><FormattedMessage id="submit"/></button>
                 <button type="button" className="btn btn-secondary ml-2" onClick={clearForm}><FormattedMessage id="clear"/></button>

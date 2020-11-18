@@ -1,19 +1,19 @@
 import React, {useState, useEffect} from "react"
 import InputDatalist from "./input-datalist.js"
 import DatePicker from "./date-picker.js"
-import mealAllowances from "../data/meals"
+import calculateMeals from "./calculate-meals.js"
 import { DateTime, Interval, Info } from "luxon"
 import * as yup from "yup"
 import monthsContained from "./months-contained.js"
-import { FormattedMessage } from 'react-intl';
-import EstimatorRow from "./estimator-row.js";
+import { FormattedMessage } from 'react-intl'
+import EstimatorRow from "./estimator-row.js"
+import EmailModal from "./email-modal.js"
+import MealsModal from "./meals-modal.js"
+
 import Tooltip from 'react-bootstrap/Tooltip'
-import Modal from 'react-bootstrap/Modal'
-import Col from 'react-bootstrap/Col'
-import Row from 'react-bootstrap/Row'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
-// import EstimatorRowDropdown from "./estimator-row-dropdown.js";
+import { Spinner } from 'react-bootstrap'
 
 import cities from "../data/cities.js"
 import geocodedCities from "../data/geocodedCities"
@@ -22,120 +22,13 @@ import accommodations from "../data/accommodations.js"
 import transportData from "../data/transport-data.js"
 import locations from "../data/locations.js"
 
-import { FaSpinner } from 'react-icons/fa';
-import { FaQuestionCircle } from 'react-icons/fa';
-import { FaExclamationTriangle } from 'react-icons/fa';
-
-import { Spinner } from 'react-bootstrap';
-
-import { FaBed } from 'react-icons/fa';
-import { FaPlane } from 'react-icons/fa';
-import { FaTaxi } from 'react-icons/fa';
-import { FaUtensils } from 'react-icons/fa';
-import { FaSuitcase } from 'react-icons/fa';
+import { FaSpinner, FaQuestionCircle, FaExclamationTriangle, FaBed, FaPlane, FaTaxi, FaUtensils, FaSuitcase } from 'react-icons/fa'
 
 import amadeusFlightOffer from '../api-calls/amadeusFlightOffer'
 import amadeusAirportCode from '../api-calls/amadeusAirportCode'
 import fetchDistanceBetweenPlaces from '../api-calls/fetchDistanceBetweenPlaces'
 
-const EmailModal = (props) => {
-    return (
-        <Modal
-            size="lg"
-            aria-labelledby="contained-modal-title-vcenter"
-            centered
-            show={props.show}
-            onHide={props.onHide}
-        >
-            <Modal.Header closeButton>
-                <Modal.Title id="contained-modal-title-vcenter">
-                    <FormattedMessage id="emailEstimate" />
-                </Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <EmailForm {...props} />
-            </Modal.Body>
-            <Modal.Footer>
-                <Button onClick={props.sendEmail}><FormattedMessage id="submit" /></Button>
-            </Modal.Footer>
-      </Modal>
-    )
-}
-
-const EmailForm = (props) => {
-    return (
-        <Form>
-            <Form.Group as={Row} controlId="tripName">
-                <Form.Label column sm="3">
-                    <FormattedMessage id="tripName" />
-                </Form.Label>
-                <Col sm="9">
-                    <FormattedMessage id="tripNamePlaceholder">
-                        {msg =>
-                            <Form.Control value={props.tripName} onChange={(e) => { props.setTripName(e.target.value) }} type="text" placeholder={msg} />
-                        }
-                    </FormattedMessage>
-                </Col>
-            </Form.Group>
-            <Form.Group as={Row} controlId="travellersName">
-                <Form.Label column sm="3">
-                    <FormattedMessage id="travellersName" />
-                </Form.Label>
-                <Col sm="9">
-                    <FormattedMessage id="travellersNamePlaceholder">
-                        {msg =>
-                            <Form.Control value={props.travellersName} onChange={(e) => { props.setTravellersName(e.target.value) }} type="text" placeholder={msg} />
-                        }
-                    </FormattedMessage>
-                </Col>
-            </Form.Group>
-            <Form.Group as={Row} controlId="travellersEmail">
-                <Form.Label column sm="3">
-                    <FormattedMessage id="travellersEmail" />
-                </Form.Label>
-                <Col sm="9">
-                    <FormattedMessage id="travellersEmailPlaceholder">
-                        {msg =>
-                            <Form.Control value={props.travellersEmail} onChange={(e) => { props.setTravellersEmail(e.target.value) }} type="text" placeholder={msg} />
-                        }
-                    </FormattedMessage>
-                </Col>
-            </Form.Group>
-            <Form.Group as={Row} controlId="approversName">
-                <Form.Label column sm="3">
-                    <FormattedMessage id="approversName" />
-                </Form.Label>
-                <Col sm="9">
-                    <FormattedMessage id="approversNamePlaceholder">
-                        {msg =>
-                            <Form.Control value={props.approversName} onChange={(e) => { props.setApproversName(e.target.value) }} type="text" placeholder={msg} />
-                        }
-                    </FormattedMessage>
-                </Col>
-            </Form.Group>
-            <Form.Group as={Row} controlId="approversEmail">
-                <Form.Label column sm="3">
-                    <FormattedMessage id="approversEmail" />
-                </Form.Label>
-                <Col sm="9">
-                    <FormattedMessage id="approversEmailPlaceholder">
-                        {msg =>
-                            <Form.Control value={props.approversEmail} onChange={(e) => { props.setApproversEmail(e.target.value) }} type="text" placeholder={msg} />
-                        }
-                    </FormattedMessage>
-                </Col>
-            </Form.Group>
-            <Form.Group as={Row} controlId="notes">
-                <Form.Label column sm="3">
-                    <FormattedMessage id="notes" />
-                </Form.Label>
-                <Col sm="9">
-                    <Form.Control value={props.tripNotes} onChange={(e) => { props.setTripNotes(e.target.value) }} value={props.tripNotes} as="textarea" rows={3} />
-                </Col>
-            </Form.Group>
-        </Form>
-    )
-}
+import './extra/estimator-print.css'
 
 const Estimator = () => {
     const citiesList = cities.citiesList;
@@ -153,13 +46,18 @@ const Estimator = () => {
         setFilteredCitiesList(list);
     }, []);
 
+    let initialDates = {
+        departure: DateTime.local(),
+        return: DateTime.local().plus({ days: 1 }),
+    }
+
     // Variables/state for inputs
     const [origin, setOrigin] = useState('');
     const [destination, setDestination] = useState('');
     const [originData, setOriginData] = useState({});
     const [destinationData, setDestinationData] = useState({});
-    const [departureDate, setDepartureDate] = useState('');
-    const [returnDate, setReturnDate] = useState('');
+    const [departureDate, setDepartureDate] = useState(initialDates.departure);
+    const [returnDate, setReturnDate] = useState(initialDates.return);
     const [privateVehicleRate, setPrivateVehicleRate] = useState('');
 
     useEffect((() => {
@@ -171,16 +69,21 @@ const Estimator = () => {
         }
 
         const getClosestsAirports = async () => {
-            await amadeusAccessTokenCheck();
-            let response = await amadeusAirportCode(data.geometry.location.lat, data.geometry.location.lng, amadeusAccessToken.token)
-            return response;
+            try {
+                await amadeusAccessTokenCheck();
+                let response = await amadeusAirportCode(data.geometry.location.lat, data.geometry.location.lng, amadeusAccessToken.token)
+                return response;
+            } catch (error) {
+                console.log('getClosestsAirports: ', error);
+            }
+
         }
 
         if (data && Object.keys(data).length !== 0) {
             getClosestsAirports()
             .then((response) => {
                 console.log('closestAirports response', response)
-            })
+            }).catch((err) => console.log('getClosestsAirports', err))
         }
 
         setOriginData(data);
@@ -209,13 +112,16 @@ const Estimator = () => {
     const [localTransportationMessage, setLocalTransportationMessage] = useState({ element: <FormattedMessage id='localTransportationDescription' />, style: 'primary' });
     const [transportationCost, setTransportationCost] = useState(0.00);
     const [localTransportationCost, setLocalTransportationCost] = useState(0.00);
-    const [mealCost, setMealCost] = useState(0.00);
+    const [mealCost, setMealCost] = useState({ total: 0.00 });
     const [otherCost, setOtherCost] = useState(0.00);
     const [summaryCost, setSummaryCost] = useState(0.00);
     const [amadeusAccessToken, setAmadeusAccessToken] = useState({})
     const [enterKilometricsDistanceManually, setEnterKilometricsDistanceManually] = useState(false)
     const [privateKilometricsValue, setPrivateKilometricsValue] = useState('');
     const [returnDistance, setReturnDistance] = useState('');
+
+    const [mealsByDay, setMealsByDay] = useState({});
+    const [province, setProvince] = useState('');
 
     const transportationEstimatesInitialState = {
         flight: {
@@ -240,13 +146,13 @@ const Estimator = () => {
         }
     }
 
-    const [transporationEstimates, setTransportationEstimates] = useState(transportationEstimatesInitialState);
+    const [transportationEstimates, setTransportationEstimates] = useState(transportationEstimatesInitialState);
 
     useEffect(() => {
         let calculateKilometrics = privateKilometricsValue * (privateVehicleRate / 100);
         setTransportationCost(calculateKilometrics.toFixed(2))
         setTransportationEstimates({
-            ...transporationEstimates,
+            ...transportationEstimates,
             rentalCar: {
                 estimatedValue: calculateKilometrics,
             }
@@ -257,16 +163,33 @@ const Estimator = () => {
         calculateTotal()
     }, [accommodationCost, transportationCost, localTransportationCost, mealCost, otherCost])
 
+    useEffect(() => {
+        let mealTotals = calculateMeals(mealsByDay, province)
+        setMealCost(mealTotals)
+    }, [mealsByDay]);
+
+    const [mealsModalShow, setMealsModalShow] = React.useState(false);
+
+    let handleMealsModalShow = (e) => {
+        e.preventDefault()
+        setMealsModalShow(true)
+    };
+
     async function fetchAmadeusToken() {
-        await fetch(`/api/FetchAmadeusToken`)
+        await fetch("/api/FetchAmadeusToken", {
+                headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+                },
+            })
             .then(response => response.json())
             .then(result => {
-                console.log('Fetched Access Token!!!', result);
+                console.log('Fetched Access Token: ', result);
                 let expiryTime = new Date();
                 expiryTime.setSeconds(expiryTime.getSeconds() + result.expires_in);
                 setAmadeusAccessToken({ token: result.access_token, expiryTime: expiryTime.getTime() });
             })
-            .catch(error => { console.log('error', error) });
+            .catch(error => { console.log('FetchAmadeusToken error', error) });
     }
 
     useEffect(() => {
@@ -279,7 +202,6 @@ const Estimator = () => {
         updateLocalTransportationCost(0.00)
         updateMealCost(0.00)
         updateOtherCost(0.00)
-        clearForm()
     }, [])
 
     const fetchHotelCost = () => {
@@ -314,7 +236,7 @@ const Estimator = () => {
                 rate: applicableRates[0].rate,
             }} />  })
         } catch (error) {
-            console.log(error);
+            console.log('fetchHotelHostError', error);
         }
     }
 
@@ -351,7 +273,11 @@ const Estimator = () => {
         const departureDateISODate = departureDate.toISODate()
         const returnDateISODate = returnDate.toISODate()
 
-        await amadeusAccessTokenCheck();
+        try {
+            await amadeusAccessTokenCheck();
+        } catch (error) {
+            console.log('amadeusAccessTokenCheck', error)
+        }
 
         amadeusFlightOffer('YOW', 'YVR', departureDateISODate, returnDateISODate, amadeusAccessToken.token)
             .then(response => response.json())
@@ -362,7 +288,7 @@ const Estimator = () => {
                 result.data.forEach(itinerary => {
                     allPrices.push(parseFloat(itinerary.price.grandTotal))
                 });
-                
+
                 const sum = allPrices.reduce((a, b) => a + b, 0);
                 const avg = (sum / allPrices.length) || 0;
 
@@ -373,7 +299,7 @@ const Estimator = () => {
 
                 updateTransportationCost(avg);
                 setTransportationEstimates({
-                    ...transporationEstimates,
+                    ...transportationEstimates,
                     flight: {
                         estimatedValue: avg,
                         estimatedValueMessage: FlightMessage,
@@ -384,6 +310,7 @@ const Estimator = () => {
                 setHaveFlightCost(true);
             })
             .catch(error => {
+                console.log('amadeus flight offer error', error);
                 updateTransportationCost(0.00);
                 setTransportationMessage({ element: <FormattedMessage id="transportationFlightMessageCouldNotLoad" />  })
             });
@@ -402,9 +329,9 @@ const Estimator = () => {
                     </>
                 })
             } else {
-                setTransportationMessage({ element: transporationEstimates.flight.estimatedValueMessage })
+                setTransportationMessage({ element: transportationEstimates.flight.estimatedValueMessage })
             };
-            updateTransportationCost(transporationEstimates.flight.estimatedValue)
+            updateTransportationCost(transportationEstimates.flight.estimatedValue)
             
         } else if (transportationType === 'train') {
             updateTransportationCost(436)
@@ -414,7 +341,7 @@ const Estimator = () => {
             setTransportationMessage({ element: <FormattedMessage id="transportationRentalCarMessage" />  })
         } else if (transportationType === 'private') {
             setPrivateKilometricsValue((returnDistance / 1000).toFixed(2));
-            updateTransportationCost(transporationEstimates.rentalCar.estimatedValue)
+            updateTransportationCost(transportationEstimates.rentalCar.estimatedValue)
             setTransportationMessage({ element: <FormattedMessage id="transportationPrivateVehicleMessage" values={{ rate: privateVehicleRate, kilometres: (returnDistance / 1000).toFixed(0) }} />  })
         }
     }, [transportationType])
@@ -445,47 +372,14 @@ const Estimator = () => {
         setSummaryCost(newValue.toFixed(2))
     }
 
-    // since this function is used in two files, we should import it
-    const calculateMeals = (departDate, returnDate, province) => {
-        let departD = DateTime.fromISO(departDate);
-        let returnD = DateTime.fromISO(returnDate);
-        
-        let duration = returnD.diff(departD, 'days')
-        let provinceAllowances = Object.keys(mealAllowances);
-
-        let estimatesForProvince = {};
-
-        if (provinceAllowances.includes(province)) {
-            estimatesForProvince = mealAllowances[province];
-        } else {
-            estimatesForProvince = mealAllowances['CAN'];
-        };
-
-        let breakfast = estimatesForProvince.breakfast;
-        let lunch = estimatesForProvince.lunch;
-        let dinner = estimatesForProvince.dinner;
-        let incidentals = estimatesForProvince.incidentals;
-        let dailyTotal = breakfast + lunch + dinner + incidentals;
-        let total = dailyTotal * duration.values.days;
-
-        return {
-            dailyTotal,
-            total,
-            breakfast,
-            lunch,
-            dinner,
-            incidentals,
-        }
-    }
-
     const rateDaysByMonth = (departureDate, returnDate, rates) => {
         // get all the dates in range
 
         let dates = Interval.fromDateTimes(
-            departureDate.startOf("day"), 
+            departureDate.startOf("day"),
             returnDate.endOf("day"))
             .splitBy({days: 1}).map(d => d.start)
-        
+
         // remove the last date, since we won't need accommodation on that day
 
         dates.pop();
@@ -518,6 +412,26 @@ const Estimator = () => {
         return result;
     }
 
+    let dailyMealTemplate = (departureDate, returnDate) => {
+        let dates = Interval.fromDateTimes(
+            departureDate.startOf("day"), 
+            returnDate.endOf("day"))
+            .splitBy({days: 1}).map(d => d.start)
+        let travelDays = {}
+        dates.forEach((date) => {
+            date = date.toISODate();
+            travelDays[date] = {
+                breakfast: true,
+                lunch: true,
+                dinner: true,
+                incidentals: true,
+            }
+        })
+
+        return travelDays
+    }
+
+
     const handleSubmit =  async(e) => {
         setLoading(true);
         setGeneralError(false);
@@ -528,30 +442,28 @@ const Estimator = () => {
                 setTransportationType('flight')
                 setAccommodationType('hotel')
                 let numberOfDays = Interval.fromDateTimes(
-                    departureDate, 
+                    departureDate,
                     returnDate)
                     .count('days')
 
-
                 let city = suburbCityList[destination] || destination;
-                let province = city.slice(-2); // This is bad.  We need to change the data structure.
+                let provinceCode = city.slice(-2); // This is bad.  We need to change the data structure.
 
-                let mealsAndIncidentals = calculateMeals(departureDate, returnDate, province);
-
-                let distanceBetweenPlaces = await fetchDistanceBetweenPlaces(origin, destination);
-                let distanceBetweenPlacesBody = await distanceBetweenPlaces.json()
+                setMealsByDay(dailyMealTemplate(departureDate, returnDate))
+                setProvince(provinceCode)
 
                 try {
+                    let distanceBetweenPlaces = await fetchDistanceBetweenPlaces(origin, destination);
+                    let distanceBetweenPlacesBody = await distanceBetweenPlaces.json()
+
+
                     let drivingDistance = distanceBetweenPlacesBody.rows[0].elements[0].distance.value;
                     let returnCalc = drivingDistance * 2;
                     setReturnDistance(returnCalc);
                 } catch (error) {
-                    console.log(error)
+                    console.log('distanceBetweenPlaces error', error)
                 }
 
-                
-
-                updateMealCost(mealsAndIncidentals.total)
                 fetchHotelCost()
                 fetchLocalTransportationRate(numberOfDays - 1)
 
@@ -572,12 +484,36 @@ const Estimator = () => {
     const clearForm = async () => {
         setOrigin('')
         setDestination('')
-        document.querySelector('#origin').value = ""
-        document.querySelector('#destination').value = ""
-        // setDepartureDate('')
-        // setReturnDate('');
-        // document.querySelector('#departureDate').value = ""
-        // document.querySelector('#returnDate').value = ""
+        setDepartureDate('');
+        setReturnDate('');
+
+        // START OF HACK This is a hack to programatically clear the autocomplete inputs
+
+        let originElement = document.querySelector('#autocomplete-origin')
+        let destinationElement = document.querySelector('#autocomplete-destination')
+        let clearFormButton = document.querySelector('#clear-button')
+        let datePickerDepart = document.querySelector('#departureDate')
+        let datePickerReturn = document.querySelector('#returnDate')
+
+        destinationElement.value = "";
+        destinationElement.click();
+        destinationElement.focus();
+        destinationElement.blur();
+        originElement.value = "";
+        originElement.click();
+        originElement.focus();
+        originElement.blur();
+
+        setTimeout(function(){ 
+            if(originElement){
+                originElement.focus();
+            }
+            datePickerDepart.value = '';
+            datePickerReturn.value = '';
+        },0);
+
+        // END OF HACK
+
     }
 
     const handleValidation = () => {
@@ -585,7 +521,6 @@ const Estimator = () => {
         let schema = yup.object().shape({
             origin: yup
                 .string()
-                .required(<FormattedMessage id="estimateOriginDestinationRequired" />)
                 .test(
                     <FormattedMessage id="estimateOriginCityValid" />,
                     <FormattedMessage id="estimateOriginCityNotValid" />,
@@ -595,7 +530,6 @@ const Estimator = () => {
                   ),
             destination: yup
                 .string()
-                .required(<FormattedMessage id="estimateDestinationRequired" />)
                 .test(
                     <FormattedMessage id="estimateDestinationCityValid" />,
                     <FormattedMessage id="estimateDestinationCityNotValid" />,
@@ -618,16 +552,16 @@ const Estimator = () => {
         return schema.validate(target, {abortEarly: false})
     }
 
-    const errorList =() => {
+    const errorList = () => {
         let list = [];
         list = validationWarnings.map((error, index) =>
-            <li key={index}><a className="alert-link" href={`#${error.path}`}>{error.errors}</a></li>
+            <li key={index}><a className="alert-link" href={'#' + error.path}>{error.errors}</a></li>
         );
         return list;
     }
 
     const calculateTotal = async () => {
-        let total = parseFloat(accommodationCost || 0) + parseFloat(transportationCost || 0) + parseFloat(localTransportationCost || 0) + parseFloat(mealCost || 0) + parseFloat(otherCost || 0);
+        let total = parseFloat(accommodationCost || 0) + parseFloat(transportationCost || 0) + parseFloat(localTransportationCost || 0) + parseFloat(mealCost.total || 0) + parseFloat(otherCost || 0);
         await updateSummaryCost(total)
     }
 
@@ -661,7 +595,8 @@ const Estimator = () => {
             return response.json()
           }).then(function(data) {
             console.log('email service: ', data);
-          });
+          })
+          .catch((err) => console.log('send email error: ', err));
     }
 
     const [emailModalShow, setEmailModalShow] = React.useState(false);
@@ -691,6 +626,13 @@ const Estimator = () => {
                 setApproversEmail={setApproversEmail}
                 setTripNotes={setTripNotes}
                 tripNotes={tripNotes}
+            />
+            <MealsModal
+                mealsByDay={mealsByDay}
+                mealCost={mealCost}
+                show={mealsModalShow}
+                onHide={() => setMealsModalShow(false)}
+                setMealsByDay={setMealsByDay}
             />
             <h2><FormattedMessage id="estimateTitle" /></h2>
             <p className="lead"><FormattedMessage id="estimateLead" /></p>
@@ -731,6 +673,7 @@ const Estimator = () => {
                         setValidationWarnings={setValidationWarnings}
                         label={<FormattedMessage id="estimateDepartureDate" />}
                         name="departureDate"
+                        initialDate={initialDates.departure}
                         updateValue={setDepartureDate}
                     ></DatePicker>
                 </div>
@@ -740,13 +683,14 @@ const Estimator = () => {
                         setValidationWarnings={setValidationWarnings}
                         label={<FormattedMessage id="estimateReturnDate" />}
                         name="returnDate"
+                        initialDate={initialDates.return}
                         updateValue={setReturnDate}
                     ></DatePicker>
                 </div>
                 <div className="col-sm-3"></div>
                 <div className="col-sm-6">
                     <button type="submit" className="btn btn-primary"><FormattedMessage id="estimate"/></button>
-                    <button type="button" className="btn btn-secondary ml-2" onClick={() => {clearForm()}}><FormattedMessage id="clear"/></button>
+                    <button type="button" id="clear-button" className="btn btn-secondary ml-2" onClick={() => {clearForm()}}><FormattedMessage id="clear"/></button>
                     {loading && <FaSpinner className="fa-spin ml-3" size="24" />}
                 </div>
             </form>
@@ -765,17 +709,16 @@ const Estimator = () => {
                 <>
                     <div className="card bg-light p-4 mb-4">
                         <h3 className="mb-3"><FormattedMessage id="estimateSummaryTitle" /></h3>
-                        {/* Each row could be a generic componemt with props passed in to define what they are */}
 
                         <div className="row mb-4">
                             <div className="col-sm-12 mb-2">
-                                <div><FaBed className="mr-2" size="25" fill="#9E9E9E" /> <FormattedMessage id="accommodation" /></div>
+                                <label htmlFor="accommodation_select"><FaBed className="mr-2" size="25" fill="#9E9E9E" /> <FormattedMessage id="accommodation" /></label>
                             </div>
                             <div className="col-sm-4 align-self-center">
                                 <div className="align-self-center">
                                     <div>
                                         {/* <label htmlFor={name}>{label}</label> */}
-                                        <div id={`accommodation_container`}>
+                                        <div id={"accommodation_container"}>
                                         <select
                                             className="custom-select mb-2"
                                             onChange={e => setAccommodationType(e.target.value)}
@@ -792,7 +735,7 @@ const Estimator = () => {
                                     disabled={accommodationType === "private"}
                                     type="text"
                                     className="form-control mb-2"
-                                    id={`accommodation_select`}
+                                    id={"accommodation_select"}
                                     name={'accommodation'}
                                     onChange={(e) => {
                                         if (parseFloat(e.target.value) > acrdTotal) {
@@ -818,19 +761,18 @@ const Estimator = () => {
 
                         <div className="row mb-4">
                             <div className="col-sm-12 mb-2">
-                                <div><FaPlane className="mr-2" size="25" fill="#9E9E9E" /> <FormattedMessage id="transportation" /></div>
+                                <label htmlFor="transportation_select"><FaPlane className="mr-2" size="25" fill="#9E9E9E" /> <FormattedMessage id="transportation" /></label>
                             </div>
                             <div className="col-sm-4 align-self-center">
                                 <div className="align-self-center">
                                     <div>
                                         {/* <label htmlFor={name}>{label}</label> */}
-                                        <div id={`transportation_container`}>
+                                        <div id={"transportation_container"}>
                                         <select
                                             className="custom-select mb-2"
                                             onChange={e => {
                                                 setTransportationType(e.target.value)
                                                 if (e.target.value === 'private') {
-                                                    console.log('here')
                                                     updateLocalTransportationCost(0)
                                                 };
                                             }}
@@ -848,7 +790,7 @@ const Estimator = () => {
                                 <input
                                     type="text"
                                     className="form-control mb-2"
-                                    id={`transportation_select`}
+                                    id={"transportation_select"}
                                     name={'transportation'}
                                     onChange={(e)  => {setTransportationCost(e.target.value)}}
                                     onBlur={calculateTotal}
@@ -898,10 +840,13 @@ const Estimator = () => {
                             message={localTransportationMessage}
                         />
                         <EstimatorRow
-                            value={mealCost}
+                            value={mealCost.total}
                             name="mealsAndIncidentals"
                             id="mealsAndIncidentals"
                             description="selectMealsToInclude"
+                            message={{
+                                element: <a href="#" onClick={(e) => { handleMealsModalShow(e) }}>Select meals to include</a>
+                            }}
                             icon={<FaUtensils className="mr-2" size="25" fill="#9E9E9E" />}
                             title="mealsAndIncidentals"
                             calculateTotal={calculateTotal}
@@ -922,7 +867,7 @@ const Estimator = () => {
                         <div className="row mb-4">
                             <div className="col-sm-6 align-self-center text-right">
                                 <hr />
-                                <strong className="mr-2"><FormattedMessage id="totalCost" /></strong>{`$${summaryCost}`}
+                                <strong className="mr-2"><FormattedMessage id="totalCost" /></strong>{'$ ' + summaryCost}
                             </div>
                             <div className="col-sm-6 align-self-center text-wrap">
                             </div>
@@ -930,6 +875,7 @@ const Estimator = () => {
                     </div>
                     <div className="row ml-1 mb-5">
                         <Button className="px-5" onClick={() => { setEmailModalShow(true) }}><FormattedMessage id="email" /></Button>
+                        <Button variant="outline-primary" className="px-5 ml-3" onClick={() => { window.print() }}><FormattedMessage id="print" /></Button>
                     </div>
                     <div>
                         <h3>How did we get these numbers?</h3>

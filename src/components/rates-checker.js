@@ -6,15 +6,23 @@ import * as yup from "yup"
 import monthsContained from "./months-contained.js"
 import { FormattedMessage } from 'react-intl';
 
+import { DateTime } from "luxon"
+
 import cities from "../data/cities.js"
 import acrdRates from "../data/acrdRates.js"
 
 import { FaSpinner } from 'react-icons/fa';
 import { FaExclamationTriangle } from 'react-icons/fa';
 
-// import { globalHistory } from "@reach/router"
+import {dailyMealTemplate} from "./functions/dailyMealTemplate"
 
 const RatesChecker = () => {
+
+    let initialDates = {
+        departure: DateTime.local(),
+        return: DateTime.local().plus({ days: 1 }),
+    }
+
     const citiesList = cities.citiesList;
     const suburbCityList = cities.suburbCityList;
     const [filteredCitiesList, setFilteredCitiesList] = useState([]);
@@ -30,10 +38,10 @@ const RatesChecker = () => {
     }, []);
 
     const [destination, setDestination] = useState('');
-    const [departureDate, setDepartureDate] = useState('');
-    const [returnDate, setReturnDate] = useState('');
+    const [departureDate, setDepartureDate] = useState(initialDates.departure);
+    const [returnDate, setReturnDate] = useState(initialDates.return);
     const [result, setResult] = useState({});
-
+    const [mealsByDay, setMealsByDay] = useState({});
 
     const [validationWarnings, setValidationWarnings] = useState([]);
 
@@ -63,7 +71,9 @@ const RatesChecker = () => {
                     return res;
                 }, {});
 
-                let mealsAndIncidentals = calculateMeals(departureDate, returnDate, province);
+                setMealsByDay(dailyMealTemplate(departureDate, returnDate))
+
+                let mealsAndIncidentals = calculateMeals(mealsByDay, province);
 
                 setResult({
                     acrdRatesFiltered,
@@ -154,6 +164,7 @@ const RatesChecker = () => {
                     label={<FormattedMessage id="rateDepart" />}
                     name="departureDate"
                     updateValue={setDepartureDate}
+                    initialDate={initialDates.departure}
                 />
                 <DatePicker
                     validationWarnings={validationWarnings}
@@ -161,6 +172,7 @@ const RatesChecker = () => {
                     label={<FormattedMessage id="rateReturn" />}
                     name="returnDate"
                     updateValue={setReturnDate}
+                    initialDate={initialDates.return}
                 />
                 <button type="submit" className="btn btn-primary"><FormattedMessage id="submit"/></button>
                 <button type="button" className="btn btn-secondary ml-2" onClick={clearForm}><FormattedMessage id="clear"/></button>

@@ -34,6 +34,9 @@ const EstimatorRow = ({ name, id, message, icon, title, updateCost, calculateTot
                         </label>
                 </div>
             </div>
+            <div className="align-self-center mt-2">
+                <p>$</p>
+            </div>
             <div className="col-sm-2 align-self-center">
                 <input
                     type="text"
@@ -43,7 +46,7 @@ const EstimatorRow = ({ name, id, message, icon, title, updateCost, calculateTot
                     name={name}
                     onChange={(e) => {updateCost(e.target.value)}} onBlur={calculateTotal}></input>
             </div>
-            <div className="col-sm-6 align-self-center text-wrap mb-2">
+            <div className="col-sm-5 align-self-center text-wrap mb-2">
                 {message && message.element}
             </div>
         </div>

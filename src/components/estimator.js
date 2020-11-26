@@ -713,10 +713,10 @@ const Estimator = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="align-self-center mt-2">
-                                <p>$</p>
-                            </div>
-                            <div className="col-sm-2 align-self-center">
+                            <div className="input-group col-sm-2 align-self-center mb-2">
+                                <div className="input-group-prepend">
+                                    <span class="input-group-text input-group-sm">$</span>
+                                </div>
                                 <input
                                     disabled={accommodationType === "private"}
                                     type="text"
@@ -740,7 +740,7 @@ const Estimator = () => {
                                     value={accommodationCost}>
                                 </input>
                             </div>
-                            <div className="col-sm-5 align-self-center text-wrap mb-2">
+                            <div className="col-sm-6 align-self-center text-wrap mb-2">
                                 {accommodationMessage.element}
                             </div>
                         </div>

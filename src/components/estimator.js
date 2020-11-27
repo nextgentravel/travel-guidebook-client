@@ -713,10 +713,9 @@ const Estimator = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="input-group col-sm-2 align-self-center mb-2">
+                            <div className="input-group col-sm-3 align-self-center mb-2">
                                 <div className="input-group-prepend">
-                                    <span class="input-group-text input-group-sm">$</span>
-                                </div>
+                                    <span className="input-group-text mb-2">$</span>
                                 <input
                                     disabled={accommodationType === "private"}
                                     type="text"
@@ -739,8 +738,8 @@ const Estimator = () => {
                                     onBlur={calculateTotal}
                                     value={accommodationCost}>
                                 </input>
-                            </div>
-                            <div className="col-sm-6 align-self-center text-wrap mb-2">
+                            </div></div>
+                            <div className="col-sm-5 align-self-center text-wrap mb-2">
                                 {accommodationMessage.element}
                             </div>
                         </div>
@@ -772,20 +771,19 @@ const Estimator = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="align-self-center mt-2">
-                                <p>$</p>
-                            </div>
-                            <div className="col-sm-2 align-self-center">
-                                <input
-                                    type="text"
-                                    className="form-control mb-2"
-                                    id={"transportation_select"}
-                                    name={'transportation'}
-                                    onChange={(e)  => {setTransportationCost(e.target.value)}}
-                                    onBlur={calculateTotal}
-                                    value={transportationCost}
-                                >
-                                </input>
+                            <div className="col-sm-3 align-self-center">
+                                <div className="input-group-prepend">
+                                    <span className="input-group-text mb-2">$</span>
+                                    <input
+                                        type="text"
+                                        className="form-control mb-2"
+                                        id={"transportation_select"}
+                                        name={'transportation'}
+                                        onChange={(e)  => {setTransportationCost(e.target.value)}}
+                                        onBlur={calculateTotal}
+                                        value={transportationCost}>
+                                    </input>
+                                </div>
                             </div>
                             <div className="col-sm-5 align-self-center text-wrap mb-2">
                                 {transportationMessage.element}

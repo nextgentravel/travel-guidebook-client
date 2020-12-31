@@ -1,4 +1,5 @@
 import React from "react";
+import directives from '../data/dummy-directives'
 
 const TravelStep = ({data, index}) => {
     return (

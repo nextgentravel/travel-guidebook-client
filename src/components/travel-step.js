@@ -7,7 +7,7 @@ const TravelStep = ({data, index}) => {
                 <div className="col-sm-12">
                     <h3 className="mb-3">
                         {data.show_step_number &&
-                            <span className="text-secondary pr-3">
+                            <span className="text-gray-light pr-3">
                             Step {index + 1}
                             </span>
                         }
